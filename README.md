@@ -1,19 +1,25 @@
 # fake_editor
 Text editor in python
 
+
 Usage:-
+
 	run the program, and you can start writing
-	
+
+
 
 CaughtMode:-
+
 	when we press \ (backslash) the editor become
 	normal and no data is being written to actual
 	file
+	
 	NOTE:- Once entered, you can't get out of caught
 		mode, you  have to restart it
 
 
 Features:-
+
 	* Autosaves when we press enter
 	* Backspace is allowed (in real data too)
 	* Caught Mode available
