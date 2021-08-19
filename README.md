@@ -30,6 +30,8 @@ Features:-
 
 
 Errors:-
+
 	* Backspace not working in windows (line 58 keycode(=22 in linux) (=8 in windows))
+
 	* Can only remove last line
 	
