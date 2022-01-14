@@ -1,115 +1,120 @@
 import tkinter as tk
 
 
-def closeProgram():
-    save_one_line()
-    exit(0)
+
+class DiaryWriter:
+    def __init__(self,saved_file_path):
+        self.saved_file_path = saved_file_path
+        self.one_line = ""
+        self.caught = False
+        self.count = 0
+
+        self.get_fake_data()
+
+        self.windo = tk.Tk()
+        self.windo.title("Diary writer")
+
+        self.windo.protocol("WM_DELETE_WINDOW",self.disable_event)
+
+        #text box
+        self.txt = tk.Text(self.windo,height=30,width=80)
+        self.txt.pack()
+        self.txt.configure(state='disabled')
+
+        #clear button
+        self.clearBtn = tk.Button(self.windo,text="Clear",command=self.pressClear)
+        self.clearBtn.pack()
 
 
-def save_one_line():    #saving one line of buffer to hidden file
-    global one_line
-    saved_file = open('saved_file.txt','a')
-    if one_line:
-        saved_file.write(one_line)
-    saved_file.write('\n')
-    saved_file.close()
-    one_line = ""        #empty the buffer
-    print(one_line)
+        #exit button
+        self.exitBtn = tk.Button(self.windo,text="Exit",command=self.closeProgram)
+        self.exitBtn.pack()
+
+
+
+        self.windo.bind('<KeyPress>',self.pressed)
+        self.windo.mainloop()
     
 
-def get_fake_data():           #fake data to be retrieved from file 
-    fake_file = open("fake_file.txt",'r')
-    fake_data = fake_file.readlines()
-    fake_data = [line[:-1] for line in fake_data]
-    fake_data = " ".join(fake_data)
-    return fake_data  
+    def disable_event(self):
+        pass
 
-def pressClear():      #when clear is pressed
-    t.configure(state='normal')
-    t.delete("1.0",tk.END)    #clear the box
-    if not caught:
-        t.configure(state='disabled')
-    else:
-        t.configure(state='normal')
-        t.focus_set()
+
+    def closeProgram(self):
+        self.save_one_line()
+        self.windo.destroy()
+
+
+        
+
+
+    def pressClear(self):      #when clear is pressed
+        self.txt.configure(state='normal')
+        self.txt.delete("1.0",tk.END)    #clear the box
+        if not self.caught:
+            self.txt.configure(state='disabled')
+        else:
+            self.txt.configure(state='normal')
+            self.txt.focus_set()
+
+
+    def save_one_line(self):    #saving one line of buffer to hidden file
+        if not self.one_line:
+            return
+        saved_file = open(self.saved_file_path,'a')
+        saved_file.write(self.one_line)
+        saved_file.write('\n')
+        saved_file.close()
+        self.one_line = ""        #empty the buffer
+
+
+    def pressed(self,key):     #when a key is pressed
+        to_show = 'x'     #it is string to show to user
+        if key.char == "\\":      #it is \  
+            self.save_one_line()
+            self.txt.configure(state='normal')
+            self.txt.focus_set()
+            self.caught = True
+        
+        if self.caught:    #when get caught
+            return
+
+        if key.char == "\r":   #when we press enter
+            cmplete_wrd = ""
+            while self.fake_str[self.count] != " ":      #word completion
+                cmplete_wrd += self.fake_str[self.count]
+                self.count += 1 
+
+            to_show = cmplete_wrd+'\n'
+            self.count+=1
+            self.save_one_line()
+
+        elif key.keycode==22:   #backspace (22 => linux & 8 => windows)
+            #in real buffer
+            if len(self.one_line) > 1:
+                self.one_line = self.one_line[:-1]
+            #to show user
+            self.txt.configure(state='normal')
+            self.txt.focus_set()
+            return  
+
+        else:             #for any other character
+            to_show = self.fake_str[self.count]
+            self.count += 1
+            self.one_line += key.char   #put fake character in buffer
+
+        self.txt.configure(state='normal')
+        self.txt.insert(tk.END,to_show)    #this is where we actually put in text box
+        self.txt.configure(state='disabled')
+
+
+    def get_fake_data(self):           #fake data to be retrieved from file 
+        fake_file = open("fake_file.txt",'r')
+        fake_data = fake_file.readlines()
+        fake_data = [line[:-1] for line in fake_data]
+        fake_data = " ".join(fake_data)
+        self.fake_str = fake_data 
     
 
 
-def pressed(key):     #when a key is pressed
-    global one_line
-    global count
-    global caught
-    to_show = 'x'     #it is string to show to user
-    if key.char == "\\":      #it is \  
-        save_one_line()
-        t.configure(state='normal')
-        t.focus_set()
-        caught = True
-    
-    if caught:    #when get caught
-        return
-
-    if key.char == "\r":   #when we press enter
-        cmplete_wrd = ""
-        while fake_str[count] != " ":      #word completion
-            cmplete_wrd += fake_str[count]
-            count += 1 
-
-        to_show = cmplete_wrd+'\n'
-        count+=1
-        save_one_line()
-
-    elif key.keycode==22:   #backspace
-        #in real buffer
-        if len(one_line) > 1:
-            one_line = one_line[:-1]
-        #to show user
-        t.configure(state='normal')
-        t.focus_set()
-        return  
-
-    else:             #for any other character
-        to_show = fake_str[count]
-        count += 1
-        one_line += key.char   #put fake character in buffer
-
-    t.configure(state='normal')
-    t.insert(tk.END,to_show)    #this is where we actually put in text box
-    t.configure(state='disabled')
-
-
-
-#global variables
-one_line = ""   #store one line 
-fake_str = get_fake_data()    #all fake data in string format
-count = 0   #fake data fetch count
-caught = False        #are we caught
-   
-
-
-#tkinter code
-root = tk.Tk()
-
-root.title("heybuddy")
-#root.geometry("500x500")
-
-#text box
-t = tk.Text(root,height=30,width=80)
-t.pack()
-t.configure(state='disabled')
-
-#clear button
-clearBtn = tk.Button(root,text="Clear",command=pressClear)
-clearBtn.pack()
-
-
-#exit button
-exitBtn = tk.Button(root,text="Exit",command=closeProgram)
-exitBtn.pack()
-
-
-
-#for everykey press, run pressed fxn
-root.bind('<KeyPress>',pressed)
-
-root.mainloop()
+DiaryWriter("saved_file.txt")
